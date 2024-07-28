@@ -1,0 +1,61 @@
+name: parcode
+description: A new Flutter project.
+# The following line prevent0s the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+ 
+  firebase_core: ^2.24.2
+  qr_code_scanner: ^1.0.1 
+  cloud_firestore: 
+  path_provider: 
+  permission_handler: 
+  dropdown_search: ^5.0.3
+  flutter_excel: ^1.0.0
+  giffy_dialog: ^2.0.0+2
+  bloc: ^8.1.2
+  sqflite: ^2.0.0+3
+  path: ^1.8.0
+  flutter_bloc: 
+  excel: ^2.0.6
+  universal_html: ^2.0.8
+  awesome_dialog: 
+  flutter_launcher_icons: ^0.13.1
+  audioplayers:
+flutter_icons:
+  image_path: "assets/images/OIP.jpe"
+  android: "launcher_icon"
+  ios: true 
+  cupertino_icons: ^1.0.2
+  awesome_dialog: ^3.1.0
+  
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^4.0.0
+
+flutter:
+
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/images/
+    - assets/audios/Error.mp3
+
+
+fonts:
+   
+    - family: MulishRoman
+      fonts:
+        - asset: assets/fonts/MulishRomanBold.ttf

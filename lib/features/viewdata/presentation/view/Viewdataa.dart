@@ -1,0 +1,426 @@
+// ignore_for_file: use_build_context_synchronously, unused_field, library_private_types_in_public_api, file_names, avoid_print, must_be_immutable, unused_local_variable, no_leading_underscores_for_local_identifiers
+
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_excel/excel.dart';
+import 'package:parcode/core/utilis/constant.dart';
+import 'package:parcode/core/widgets/AwesomeDiaglog.dart';
+import 'package:parcode/features/home/home.dart';
+import 'package:parcode/features/viewdata/cubit/cubit/data_cubit.dart';
+
+import 'package:universal_html/html.dart' as html;
+class ViewDataScreen extends StatefulWidget {
+  ViewDataScreen({super.key});
+  static String id = 'viewdata';
+
+  @override
+  _ViewDataScreenState createState() => _ViewDataScreenState();
+}
+
+class _ViewDataScreenState extends State<ViewDataScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Initial setup, if needed
+  }
+
+  @override
+  void dispose() {
+    DataCubit.get(context).close(); // Ensure resources are closed
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+    final width = MediaQuery.of(context).size.width;
+    final List<String> _dropdownItems = [
+      'Company 1',
+      'Company 2',
+      'Company 3',
+      'Company 4',
+    ];
+ Future<void> generateExcel(List<Map<String, dynamic>> qrcodes) async {
+    var excel = Excel.createExcel();
+
+    Sheet sheetObject = excel['QR Codes'];
+    sheetObject.appendRow([
+      'ID',
+      'Barcode \n الباركود',
+      'DateTime \n التاريخ',
+      'Company \n الشركة',
+    ]);
+
+    for (var code in qrcodes) {
+      sheetObject.appendRow([
+        code['id'],
+        code['qrCode'],
+        code['datetime'],
+        code['company'],
+      ]);
+    }
+var bytes = excel.encode();
+
+      if (bytes == null) {
+        throw Exception('Failed to encode Excel file');
+      }
+
+      // Create a Blob from the bytes
+      final blob = html.Blob([bytes],
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+      // Create a download link and trigger it
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute('download', 'QRCodesquary.xlsx')
+        ..click();
+      html.Url.revokeObjectUrl(url);
+
+      // Show success dialog
+      customAwesomeDialog(
+        context: context,
+        dialogType: DialogType.success,
+        title: 'Success',
+        description:
+            'Excel file downloaded successfully! \n تم تنزيل ملف اكسل بنجاح',
+        buttonColor: const Color(0xff00CA71),
+      ).show();
+
+  }
+    // The selected item
+    String? selectedItem;
+    return BlocProvider(
+      create: (context) => DataCubit(),
+      child: BlocConsumer<DataCubit, DataState>(
+        listener: (context, state) {
+          if (state is DataDeletedSuccessfully ||
+              state is AllDataDeletedSuccessfully) {
+            setState(() {});
+          }
+        },
+        builder: (context, state) {
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: primarycolor,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios),
+                color: Colors.white,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Core()),
+                  );
+                },
+              ),
+              title: const Text(
+                'View QR Codes',
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Pacifico',
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.delete_sweep, color: Colors.white),
+                  onPressed: () async {
+                    await DataCubit.get(context).deleteAllData(context);
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ViewDataScreen()));
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.download, color: Colors.white),
+                        onPressed: () async {
+                        final qrcodes = DataCubit.get(context).qrcodes;
+                        await generateExcel(qrcodes);
+                      },
+                   
+                ),
+              ],
+            ),
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(
+                        top: height * 0.05,
+                        bottom: height * 0.05,
+                        left: 16,
+                        right: 16),
+                    child: TextField(
+                      decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.calendar_today),
+                            onPressed: () {
+                              DataCubit.get(context).selectDate(context);
+                              DataCubit.get(context).searchQuery =
+                                  DataCubit.get(context)
+                                      .searchControllerDatetime
+                                      .text;
+                              DataCubit.get(context).loadDataDatetime(
+                                  DataCubit.get(context).searchQuery);
+                            },
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: width * 0.05,
+                              vertical: height * 0.02),
+                          labelText: 'Date',
+                          hintText: 'Search by Date',
+                          labelStyle: TextStyle(
+                            fontSize: 25,
+                            color: primarycolor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF047EB0),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF88AACA),
+                            ),
+                          ),
+                          border: const OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color(0xFF88AACA),
+                            ),
+                          )),
+                      controller:
+                          DataCubit.get(context).searchControllerDatetime,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(
+                        bottom: height * 0.05, left: 16, right: 16),
+                    child: TextField(
+                      decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.search),
+                            onPressed: () {
+                              DataCubit.get(context).searchQuery =
+                                  DataCubit.get(context)
+                                      .searchControllerQR
+                                      .text;
+                              DataCubit.get(context).loadDataQR(
+                                  DataCubit.get(context).searchQuery);
+                            },
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: width * 0.05,
+                              vertical: height * 0.02),
+                          labelText: 'BARCODE',
+                          hintText: 'Search by Barcode',
+                          labelStyle: TextStyle(
+                            fontSize: 25,
+                            color: primarycolor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF047EB0),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF88AACA),
+                            ),
+                          ),
+                          border: const OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color(0xFF88AACA),
+                            ),
+                          )),
+                      controller: DataCubit.get(context).searchControllerQR,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(
+                        bottom: height * 0.05, left: 16, right: 16),
+                    child: TextField(
+                      decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.search),
+                            onPressed: () {
+                              DataCubit.get(context).searchQuery =
+                                  DataCubit.get(context)
+                                      .searchControllerID
+                                      .text;
+                              DataCubit.get(context).loadDataID(
+                                  DataCubit.get(context).searchQuery);
+                            },
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: width * 0.05,
+                              vertical: height * 0.02),
+                          labelText: 'ID',
+                          hintText: 'Search by Id',
+                          labelStyle: TextStyle(
+                            fontSize: 25,
+                            color: primarycolor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF047EB0),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF88AACA),
+                            ),
+                          ),
+                          border: const OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color(0xFF88AACA),
+                            ),
+                          )),
+                      controller: DataCubit.get(context).searchControllerID,
+                    ),
+                  ),
+                  Padding(
+                    padding:EdgeInsets.only(
+                        bottom: height * 0.05, left: 16, right: 16,),
+                    child: Container(
+                      height: height * 0.07,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(
+                          width: 2,
+                          color:  const Color(0xFF88AACA),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(
+                          child: DropdownSearch<String>(
+                            popupProps: const PopupProps.menu(
+                              showSearchBox: true,
+                            ),
+                            items: _dropdownItems,
+                            dropdownDecoratorProps: DropDownDecoratorProps(
+                              dropdownSearchDecoration: InputDecoration(
+                                labelText: selectedItem ?? "Select a company",
+                                hintText: "Search for a company",
+                              ),
+                            ),
+                            selectedItem: selectedItem,
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                selectedItem = newValue;
+                  
+                                DataCubit.get(context).searchQuery = newValue!;
+                  
+                                DataCubit.get(context).loadDataCompany(
+                                    DataCubit.get(context).searchQuery);
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  StreamBuilder<List<Map<String, dynamic>>>(
+                    stream: DataCubit.get(context).qrcodesStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      }
+
+                      final qrcodes = DataCubit.get(context).qrcodes;
+                      print(qrcodes);
+                      return qrcodes.isEmpty
+                          ? const Text(
+                              'No data exist') // Return an empty container if no data is found
+                          : FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: DataTable(
+                                columns: const [
+                                  DataColumn(label: Text('ID')),
+                                  DataColumn(
+                                      label: Text('Barcode \n الباركود')),
+                                  DataColumn(
+                                      label: Text('DateTime \n التاريخ')),
+                                  DataColumn(label: Text('Company \n الشركة')),
+                                  DataColumn(label: Text('Actions')),
+                                ],
+                                rows: qrcodes.map<DataRow>((code) {
+                                  return DataRow(
+                                    cells: [
+                                      DataCell(SizedBox(
+                                          width: width * .02,
+                                          child: Text('${code['id']}'))),
+                                      DataCell(SizedBox(
+                                        width: width * .1,
+                                        child: Text('${code['qrCode']}'),
+                                      )),
+                                      DataCell(SizedBox(
+                                          width: width * .1,
+                                          child: Text('${code['datetime']}'))),
+                                      DataCell(SizedBox(
+                                          width: width * .09,
+                                          child: Text('${code['company']}'))),
+                                      DataCell(
+                                        SizedBox(
+                                          width: width * .02,
+                                          child: IconButton(
+                                            icon: const Icon(
+                                              Icons.delete,
+                                              color: Colors.red,
+                                            ),
+                                            onPressed: () async {
+                                              await DataCubit.get(context)
+                                                  .deleteData(
+                                                      code['id'], context);
+                                              Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          ViewDataScreen()));
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
+                            );
+                    },
+                  ),
+                  
+                  
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
