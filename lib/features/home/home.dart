@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:parcode/core/widgets/CustomButton.dart';
 
 class Core extends StatefulWidget {
-  Core({super.key});
+  const Core({super.key});
   static String id = 'homepage';
 
   @override
@@ -140,7 +140,7 @@ class _CoreState extends State<Core> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => ViewDataScreen()),
+                                builder: (context) => const ViewDataScreen()),
                           );
                         },
                         child: const customButton(text: "View QR Code")),

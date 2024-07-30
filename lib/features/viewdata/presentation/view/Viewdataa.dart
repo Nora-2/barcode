@@ -14,7 +14,7 @@ import 'package:parcode/features/viewdata/cubit/cubit/data_cubit.dart';
 import 'package:universal_html/html.dart' as html;
 
 class ViewDataScreen extends StatefulWidget {
-  ViewDataScreen({super.key});
+  const ViewDataScreen({super.key});
   static String id = 'viewdata';
 
   @override
@@ -72,7 +72,7 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => Core()),
+                    MaterialPageRoute(builder: (context) => const Core()),
                   );
                 },
               ),
@@ -93,7 +93,7 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                     Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => ViewDataScreen()));
+                            builder: (context) => const ViewDataScreen()));
                   },
                 ),
                 IconButton(

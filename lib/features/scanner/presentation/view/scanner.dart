@@ -8,7 +8,7 @@ import 'package:parcode/features/scanner/presentation/widget/qrview.dart';
 import 'package:parcode/core/widgets/toppart.dart';
 
 class Scanner extends StatefulWidget {
-   Scanner({super.key, required this.company});
+  Scanner({super.key, required this.company});
   static String id = 'Scanner';
   String company;
   @override
@@ -63,8 +63,8 @@ class _ScannerState extends State<Scanner> {
                     padding: EdgeInsets.only(
                         top: height * 0.06,
                         bottom: height * 0.06,
-                        left: width * 0.06,
-                        right: width * 0.062),
+                        left: width * 0.16,
+                        right: width * 0.16),
                     child: CustomFormField(
                       ispass: false,
                       hint: 'Enter your Code',
@@ -84,7 +84,7 @@ class _ScannerState extends State<Scanner> {
                       ),
                       controller: code,
                       onsubmit: (value) {
-                        manualCode(context, code,widget.company);
+                        manualCode(context, code, widget.company);
                         code.clear();
                       },
                     ),

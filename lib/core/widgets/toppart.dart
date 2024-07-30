@@ -26,7 +26,7 @@ class toppart extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) =>  Core()),
+                  MaterialPageRoute(builder: (context) =>  const Core()),
                 );
               },
               icon: const Icon(
