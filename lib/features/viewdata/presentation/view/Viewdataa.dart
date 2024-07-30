@@ -12,6 +12,7 @@ import 'package:parcode/features/home/home.dart';
 import 'package:parcode/features/viewdata/cubit/cubit/data_cubit.dart';
 
 import 'package:universal_html/html.dart' as html;
+
 class ViewDataScreen extends StatefulWidget {
   ViewDataScreen({super.key});
   static String id = 'viewdata';
@@ -266,7 +267,7 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                       right: 16,
                     ),
                     child: Container(
-                      height: height * 0.07,
+                      height: height * 0.09,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(
@@ -378,7 +379,11 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                                               await DataCubit.get(context)
                                                   .deleteData(docId, context);
                                               setState(() {
-                                                                   DataCubit.get(context).qrcodes.removeWhere((element) => element['id'] == code['id']);
+                                                DataCubit.get(context)
+                                                    .qrcodes
+                                                    .removeWhere((element) =>
+                                                        element['id'] ==
+                                                        code['id']);
                                               });
                                             },
                                           ),
