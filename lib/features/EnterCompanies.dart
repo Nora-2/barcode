@@ -22,21 +22,40 @@ class _EntercompaniesState extends State<Entercompanies> {
   CollectionReference companies =
       FirebaseFirestore.instance.collection('companies');
 
-  Future<void> addCompany() {
-    return companies
-        .add({
-          'Company Name': _companyController.text,
-        })
-        .then((value) => print("Company Added"))
-        .catchError((error) => customAwesomeDialog(
-                context: context,
-                dialogType: DialogType.error,
-                title: 'Error',
-                description:
-                    'Failed to add comapny: $error \n فشل في إضافة الشركة',
-                buttonColor: Colors.red)
-            .show());
+  Future<void> addCompany() async {
+  String companyName = _companyController.text;
+
+  
+  QuerySnapshot querySnapshot = await companies
+      .where('Company Name', isEqualTo: companyName)
+      .get();
+
+  if (querySnapshot.docs.isEmpty) {
+    try {
+      await companies.add({'Company Name': companyName});
+      print("Company Added");
+      
+    } catch (error) {
+      // Handle errors when adding the company
+      customAwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        title: 'Error',
+        description: 'Failed to add company: $error \n فشل في إضافة الشركة',
+        buttonColor: Colors.red,
+      ).show();
+    }
+  } else {
+    
+    customAwesomeDialog(
+      context: context,
+      dialogType: DialogType.error,
+      title: 'Error',
+      description: 'Company already exists! \n الشركة موجودة بالفعل',
+      buttonColor: Colors.red,
+    ).show();
   }
+}
 
   @override
   Widget build(BuildContext context) {
