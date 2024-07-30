@@ -1,4 +1,6 @@
 import 'package:parcode/core/utilis/constant.dart';
+import 'package:parcode/core/widgets/toppart.dart';
+import 'package:parcode/features/EnterCompanies.dart';
 import 'package:parcode/features/excel/presentation/view/excel.dart';
 import 'package:parcode/features/scanner/presentation/view/scanner.dart';
 import 'package:parcode/features/scanner/presentation/widget/customformfield.dart';
@@ -28,25 +30,7 @@ class _CoreState extends State<Core> {
       backgroundColor: primarycolor,
       body: Column(
         children: [
-          SizedBox(
-            height: height * 0.2,
-            width: width,
-            child: Column(
-              children: [
-                Container(
-                  padding: EdgeInsets.only(top: height * 0.07),
-                  child: const Center(
-                    child: Text('Naham Inventory',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 30,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1)),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          toppart(height: height, width: width,SpecificPage: Entercompanies(),),
           Container(
             height: height * 0.8,
             width: width,

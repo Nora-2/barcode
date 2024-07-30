@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:parcode/core/utilis/constant.dart';
 import 'package:parcode/features/excel/cubit/cubit/excel_cubit.dart';
 import 'package:parcode/core/widgets/toppart.dart';
+import 'package:parcode/features/home/home.dart';
 
 class DownloadDataScreen extends StatefulWidget {
   const DownloadDataScreen({super.key});
@@ -25,7 +26,7 @@ class _DownloadDataScreenState extends State<DownloadDataScreen> {
               backgroundColor: primarycolor,
               body: Column(
                 children: [
-                  toppart(height: height, width: width),
+                  toppart(height: height, width: width,SpecificPage: Core(),),
                   Container(
                     height: height * 0.8,
                     width: width,

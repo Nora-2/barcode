@@ -18,6 +18,7 @@ class _welcomePageState extends State<welcomePage> {
     final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      backgroundColor: Colors.white,
         body: Column(
       children: [
         Center(

@@ -7,10 +7,13 @@ class toppart extends StatelessWidget {
     super.key,
     required this.height,
     required this.width,
+    required this.SpecificPage,
   });
 
   final double height;
   final double width;
+  final Widget SpecificPage;
+
 
   @override
   Widget build(BuildContext context) {
@@ -20,13 +23,13 @@ class toppart extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.only(top: height * 0.05),
+            padding: EdgeInsets.only(top: height * 0.03),
             alignment: Alignment.topLeft,
             child: IconButton(
-              onPressed: () {
-                Navigator.push(
+               onPressed: () {
+                Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) =>  const Core()),
+                  MaterialPageRoute(builder: (context) => SpecificPage),
                 );
               },
               icon: const Icon(

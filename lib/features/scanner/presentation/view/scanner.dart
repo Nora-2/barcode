@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:parcode/core/utilis/constant.dart';
+import 'package:parcode/features/home/home.dart';
 import 'package:parcode/features/scanner/presentation/widget/customformfield.dart';
 import 'package:parcode/features/scanner/presentation/widget/manualCode.dart';
 import 'package:parcode/features/scanner/presentation/widget/qrview.dart';
@@ -27,7 +28,7 @@ class _ScannerState extends State<Scanner> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            toppart(height: height, width: width),
+            toppart(height: height, width: width,SpecificPage: Core(),),
             Container(
               height: height * 0.8,
               width: width,
@@ -77,6 +78,7 @@ class _ScannerState extends State<Scanner> {
                                   builder: (context) => const QRViewExample()));
                         },
                       ),
+                      
                       preicon: const Icon(
                         Icons.edit,
                         size: 19,
