@@ -1,4 +1,3 @@
-
 import 'package:parcode/core/utilis/constant.dart';
 import 'package:parcode/features/excel/presentation/view/excel.dart';
 import 'package:parcode/features/scanner/presentation/view/scanner.dart';
@@ -66,25 +65,23 @@ class _CoreState extends State<Core> {
                       width: width * 0.3,
                       height: height * 0.2,
                       child: Image.asset('assets/images/select (1).png')),
-                  const Text('Please Choose Your Company ....',
-                      style: TextStyle(
-                          color: Colors.blueGrey,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1)),
-                  SizedBox(height: height * 0.04),
-                  Container(
-                    width: width * 0.84,
-                    height: height * 0.07,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        width: 2,
-                        color: primarycolor,
-                      ),
-                    ),
-                    child: Center(
-                        child: CustomFormField(
+                  Padding(
+                    padding: EdgeInsets.only(top: height * 0.05),
+                    child: const Text(
+                        'Please Enter Company Name .... \n      من فضلك ادخل اسم الشركة',
+                        style: TextStyle(
+                            color: Colors.blueGrey,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1)),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(
+                        top: height * 0.04,
+                        bottom: height * 0.05,
+                        left: width * 0.16,
+                        right: width * 0.16),
+                    child: CustomFormField(
                       hint: 'Enter your Company',
                       preicon: const Icon(
                         Icons.edit,
@@ -99,7 +96,7 @@ class _CoreState extends State<Core> {
                         selectedItem = company.text;
                       },
                       ispass: false,
-                    )),
+                    ),
                   ),
                   SizedBox(height: height * 0.04),
                   const Text('Please Choose Your Operation ....',
@@ -110,7 +107,7 @@ class _CoreState extends State<Core> {
                           letterSpacing: 1)),
                   Padding(
                     padding: EdgeInsets.only(
-                        top: height * 0.091, bottom: height * 0.04),
+                        top: height * 0.041, bottom: height * 0.04),
                     child: GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -136,15 +133,18 @@ class _CoreState extends State<Core> {
                         child:
                             const customButton(text: "Download Data as Excel")),
                   ),
-                  GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ViewDataScreen()),
-                        );
-                      },
-                      child: const customButton(text: "View QR Code")),
+                  Padding(
+                    padding: EdgeInsets.only(bottom: height * 0.04),
+                    child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ViewDataScreen()),
+                          );
+                        },
+                        child: const customButton(text: "View QR Code")),
+                  ),
                 ],
               ),
             ),

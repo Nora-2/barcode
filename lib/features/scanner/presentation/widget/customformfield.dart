@@ -70,7 +70,7 @@ class _CustomFormFieldState extends State<CustomFormField> {
         suffixIcon: widget.suffix,
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.grey)),
+            borderSide: const BorderSide(color: Colors.blueGrey)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(),

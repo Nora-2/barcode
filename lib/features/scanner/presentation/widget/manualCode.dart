@@ -52,14 +52,15 @@ void manualCode(
       'datetime': date,
       'company': company,
     });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Code stored successfully!')),
-    );
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error storing code: $e')),
-    );
+    customAwesomeDialog(
+            context: context,
+            dialogType: DialogType.error,
+            title: 'Error',
+            description:
+                'Error storing the Barcode:  $e \n حدث خطأأثناء تخزين الباركود',
+            buttonColor: const Color(0xffD93E47))
+        .show();
   }
 }
 

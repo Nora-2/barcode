@@ -1,10 +1,12 @@
 // ignore_for_file: avoid_print
 
 import 'dart:developer';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:parcode/core/utilis/constant.dart';
+import 'package:parcode/core/widgets/AwesomeDiaglog.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 part 'scanner_state.dart';
@@ -109,9 +111,14 @@ class ScannerCubit extends Cubit<ScannerState> {
   void _onPermissionSet(BuildContext context, QRViewController ctrl, bool p) {
     log('${DateTime.now().toIso8601String()}_onPermissionSet $p');
     if (!p) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No Permission')),
-      );
+      customAwesomeDialog(
+              context: context,
+              dialogType: DialogType.error,
+              title: 'Error',
+              description:
+                  'No permission to access the camera \n لا تصريح بالوصول إلى الكاميرا',
+              buttonColor: const Color(0xffD93E47))
+          .show();
     }
   }
 
