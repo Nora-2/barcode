@@ -37,27 +37,39 @@ class DataCubit extends Cubit<DataState> {
     });
   }
 
-Future<void> deleteData(String docId, BuildContext context) async {
+
+Future<void> deleteData(int docId, BuildContext context) async {
   try {
-    await FirebaseFirestore.instance
+    // Get all documents where 'company' field matches the docId
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('qrcodes')
-        .doc(docId)
-        .delete();
+        .where('id', isEqualTo: docId)
+        .get();
+
+    // Delete each document
+    for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+      await doc.reference.delete();
+    }
+
+    // Rearrange and set current ID if needed
     await rearrangeAndSetCurrentId();
+
+    // Emit success state
     emit(DataDeletedSuccessfully());
 
-    // Show AlertDialog
+    // Show success dialog
     customAwesomeDialog(
       context: context,
       dialogType: DialogType.success,
       title: 'Success',
-      description:
-          'The Barcode deleted successfully! \n تم حذف هذا الباركود بنجاح',
+      description: 'The Barcode deleted successfully! \n تم حذف هذا الباركود بنجاح',
       buttonColor: const Color(0xff00CA71),
     ).show();
   } catch (e) {
+    // Emit error state
     emit(DataDeletionError());
 
+    // Show error dialog
     customAwesomeDialog(
       context: context,
       dialogType: DialogType.error,
@@ -66,6 +78,7 @@ Future<void> deleteData(String docId, BuildContext context) async {
       buttonColor: const Color(0xffD93E47),
     ).show();
 
+    // Print error for debugging
     print('Error in deleteData: $e');
   }
 }

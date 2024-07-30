@@ -12,7 +12,6 @@ import 'package:parcode/features/home/home.dart';
 import 'package:parcode/features/viewdata/cubit/cubit/data_cubit.dart';
 
 import 'package:universal_html/html.dart' as html;
-
 class ViewDataScreen extends StatefulWidget {
   ViewDataScreen({super.key});
   static String id = 'viewdata';
@@ -37,7 +36,8 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
   }
 
   Future<List<String>> fetchCompanyNames() async {
-    CollectionReference qrcodes = FirebaseFirestore.instance.collection('qrcodes');
+    CollectionReference qrcodes =
+        FirebaseFirestore.instance.collection('qrcodes');
 
     QuerySnapshot querySnapshot = await qrcodes.get();
     List<String> companyNames = querySnapshot.docs
@@ -279,12 +279,15 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                         child: Center(
                           child: FutureBuilder<List<String>>(
                             future: fetchCompanyNames(),
-                            builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
+                            builder: (BuildContext context,
+                                AsyncSnapshot<List<String>> snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
                                 return const CircularProgressIndicator();
                               } else if (snapshot.hasError) {
                                 return Text('Error: ${snapshot.error}');
-                              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                              } else if (!snapshot.hasData ||
+                                  snapshot.data!.isEmpty) {
                                 return const Text('No company names found');
                               } else {
                                 return DropdownSearch<String>(
@@ -292,17 +295,18 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                                     showSearchBox: true,
                                   ),
                                   items: snapshot.data!,
-                                  dropdownDecoratorProps:const DropDownDecoratorProps(
+                                  dropdownDecoratorProps:
+                                      const DropDownDecoratorProps(
                                     dropdownSearchDecoration: InputDecoration(
-                                    
-                                    ),
+                                        labelText: 'select company'),
                                   ),
                                   selectedItem: selectedItem,
                                   onChanged: (String? newValue) {
                                     setState(() {
                                       selectedItem = newValue;
 
-                                      DataCubit.get(context).searchQuery = newValue!;
+                                      DataCubit.get(context).searchQuery =
+                                          newValue!;
 
                                       DataCubit.get(context).loadDataCompany(
                                           DataCubit.get(context).searchQuery);
@@ -327,7 +331,7 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       }
 
-                      final qrcodes = DataCubit.get(context).qrcodes;
+                      var qrcodes = DataCubit.get(context).qrcodes;
                       print(qrcodes);
                       return qrcodes.isEmpty
                           ? const Text(
@@ -348,36 +352,34 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                                   return DataRow(
                                     cells: [
                                       DataCell(SizedBox(
-                                          width: width * .02,
+                                          width: width * .005,
                                           child: Text('${code['id']}'))),
                                       DataCell(SizedBox(
-                                        width: width * .1,
+                                        width: width * .2,
                                         child: Text('${code['qrCode']}'),
                                       )),
                                       DataCell(SizedBox(
-                                          width: width * .1,
+                                          width: width * .2,
                                           child: Text('${code['datetime']}'))),
                                       DataCell(SizedBox(
-                                          width: width * .09,
+                                          width: width * .2,
                                           child: Text('${code['company']}'))),
                                       DataCell(
                                         SizedBox(
-                                          width: width * .02,
+                                          width: width * .05,
                                           child: IconButton(
                                             icon: const Icon(
                                               Icons.delete,
                                               color: Colors.red,
                                             ),
                                             onPressed: () async {
-                                              String docId = code['id'].toString(); // Ensure docId is a string
-        await DataCubit.get(context).deleteData(docId, context);
-        setState(() {
-         
-        });
-                                            Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ViewDataScreen()));
+                                              int docId = code[
+                                                  'id']; // Ensure docId is a string
+                                              await DataCubit.get(context)
+                                                  .deleteData(docId, context);
+                                              setState(() {
+                                                                   DataCubit.get(context).qrcodes.removeWhere((element) => element['id'] == code['id']);
+                                              });
                                             },
                                           ),
                                         ),
