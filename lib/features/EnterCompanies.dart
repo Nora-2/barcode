@@ -23,39 +23,35 @@ class _EntercompaniesState extends State<Entercompanies> {
       FirebaseFirestore.instance.collection('companies');
 
   Future<void> addCompany() async {
-  String companyName = _companyController.text;
+    String companyName = _companyController.text;
 
-  
-  QuerySnapshot querySnapshot = await companies
-      .where('Company Name', isEqualTo: companyName)
-      .get();
+    QuerySnapshot querySnapshot =
+        await companies.where('Company Name', isEqualTo: companyName).get();
 
-  if (querySnapshot.docs.isEmpty) {
-    try {
-      await companies.add({'Company Name': companyName});
-      print("Company Added");
-      
-    } catch (error) {
-      // Handle errors when adding the company
+    if (querySnapshot.docs.isEmpty) {
+      try {
+        await companies.add({'Company Name': companyName});
+        print("Company Added");
+      } catch (error) {
+        // Handle errors when adding the company
+        customAwesomeDialog(
+          context: context,
+          dialogType: DialogType.error,
+          title: 'Error',
+          description: 'Failed to add company: $error \n فشل في إضافة الشركة',
+          buttonColor: Colors.red,
+        ).show();
+      }
+    } else {
       customAwesomeDialog(
         context: context,
         dialogType: DialogType.error,
         title: 'Error',
-        description: 'Failed to add company: $error \n فشل في إضافة الشركة',
+        description: 'Company already exists! \n الشركة موجودة بالفعل',
         buttonColor: Colors.red,
       ).show();
     }
-  } else {
-    
-    customAwesomeDialog(
-      context: context,
-      dialogType: DialogType.error,
-      title: 'Error',
-      description: 'Company already exists! \n الشركة موجودة بالفعل',
-      buttonColor: Colors.red,
-    ).show();
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -86,53 +82,54 @@ class _EntercompaniesState extends State<Entercompanies> {
                 key: _formKey,
                 child: Padding(
                   padding: EdgeInsets.only(
-                      top: height * 0.04,
+                      top: height * 0.3,
                       bottom: height * 0.05,
                       left: width * 0.14,
                       right: width * 0.14),
-                  child: TextFormField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter your company',
-                      suffixIcon: const Icon(
-                        Icons.edit,
-                        size: 19,
-                        color: Colors.black,
-                      ),
-                      hintStyle:
-                          const TextStyle(color: Colors.grey, fontSize: 16),
-                      enabledBorder: OutlineInputBorder(
+                  child: Center(
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                        hintText: 'Enter your company',
+                        suffixIcon: const Icon(
+                          Icons.edit,
+                          size: 19,
+                          color: Colors.black,
+                        ),
+                        hintStyle:
+                            const TextStyle(color: Colors.grey, fontSize: 16),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.blueGrey)),
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: Colors.blueGrey)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.transparent.withOpacity(0),
+                          borderSide: const BorderSide(),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.transparent.withOpacity(0),
+                          ),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Colors.transparent.withOpacity(0),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: Colors.blue,
+                          ),
                         ),
                       ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Colors.transparent.withOpacity(0),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                          color: Colors.blue,
-                        ),
-                      ),
+                      controller: _companyController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a company name';
+                        }
+                        return null;
+                      },
                     ),
-                    controller: _companyController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        
-                        return 'Please enter a company name';
-                      }
-                      return null;
-                    },
                   ),
                 ),
               ),
@@ -153,7 +150,6 @@ class _EntercompaniesState extends State<Entercompanies> {
                     if (_formKey.currentState!.validate()) {
                       addCompany();
                       _companyController.clear();
-                      
                     }
                   },
                   child: Text(

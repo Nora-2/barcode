@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:parcode/core/utilis/constant.dart';
 import 'package:parcode/core/widgets/toppart.dart';
 import 'package:parcode/features/EnterCompanies.dart';
@@ -11,8 +13,10 @@ import 'package:parcode/core/widgets/CustomButton.dart';
 class Core extends StatefulWidget {
   const Core({super.key});
   static String id = 'homepage';
+  
 
   @override
+  
   State<Core> createState() => _CoreState();
 }
 
@@ -21,6 +25,35 @@ class _CoreState extends State<Core> {
 
   // The selected item
   String? selectedItem;
+
+  // List to store dropdown items
+  List<String> _dropdownItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCompanyNames();
+  }
+
+  // Fetch company names from Firebase
+  Future<void> _fetchCompanyNames() async {
+    try {
+      // Access Firestore collection
+      CollectionReference companies = FirebaseFirestore.instance.collection('companies');
+
+      // Fetch documents
+      QuerySnapshot querySnapshot = await companies.get();
+
+      // Extract company names
+      List<String> companyNames = querySnapshot.docs.map((doc) => doc['Company Name'] as String).toList();
+
+      setState(() {
+        _dropdownItems = companyNames;
+      });
+    } catch (e) {
+      print("Error fetching company names: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,22 +98,41 @@ class _CoreState extends State<Core> {
                         bottom: height * 0.05,
                         left: width * 0.16,
                         right: width * 0.16),
-                    child: CustomFormField(
-                      hint: 'Enter your Company',
-                      preicon: const Icon(
-                        Icons.edit,
-                        size: 19,
-                        color: Colors.black,
+                        child:      Container(
+                    width: width * 0.84,
+                    height: height * 0.09,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(
+                        width: 2,
+                        color: primarycolor,
                       ),
-                      controller: company,
-                      onsubmit: (value) {
-                        setState(() {
-                          selectedItem = company.text;
-                        });
-                        selectedItem = company.text;
-                      },
-                      ispass: false,
                     ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(9.0),
+                      child: Center(
+                        child: DropdownSearch<String>(
+                          popupProps: const PopupProps.menu(
+                            showSearchBox: true,
+                          ),
+                          items: _dropdownItems,
+                          dropdownDecoratorProps:  DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              labelText: "Select a company",
+                              
+                            ),
+                          ),
+                          selectedItem: selectedItem,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedItem = newValue;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  
                   ),
                   SizedBox(height: height * 0.04),
                   const Text('Please Choose Your Operation ....',

@@ -92,7 +92,7 @@ class _ScannerState extends State<Scanner> {
                     ),
                   ),
                   SizedBox(
-                    width: width * 0.84,
+                    width: width * 0.4,
                     height: height * 0.07,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
