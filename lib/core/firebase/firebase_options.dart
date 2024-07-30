@@ -44,38 +44,38 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAlQnFbVQhxed-Cd4bNggAQSw4HhyZbA3k',
-    appId: '1:117790585867:web:0f54e9892101f726ec830e',
-    messagingSenderId: '117790585867',
-    projectId: 'qrcode-720b6',
-    authDomain: 'qrcode-720b6.firebaseapp.com',
-    storageBucket: 'qrcode-720b6.appspot.com',
-    measurementId: 'G-FV4JWEQH5S',
+    apiKey: 'AIzaSyCXw5ma2kGkXYX0373raJyXS90l38S4BYw',
+    appId: '1:1074070918946:web:8542de61f3b8a0ad91777b',
+    messagingSenderId: '1074070918946',
+    projectId: 'parcode-2fd8b',
+    authDomain: 'parcode-2fd8b.firebaseapp.com',
+    storageBucket: 'parcode-2fd8b.appspot.com',
+    measurementId: 'G-9V2V8MM9F8',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBvb3hLUSCTdiBtOmg5i-kDpwBRMIRDsfA',
-    appId: '1:117790585867:android:696415e34b76b8e2ec830e',
-    messagingSenderId: '117790585867',
-    projectId: 'qrcode-720b6',
-    storageBucket: 'qrcode-720b6.appspot.com',
+    apiKey: 'AIzaSyBlRYVtU1m36aPXf2Mqy6w8yG4OsrBwnC0',
+    appId: '1:1074070918946:android:c37303e97d53e94091777b',
+    messagingSenderId: '1074070918946',
+    projectId: 'parcode-2fd8b',
+    storageBucket: 'parcode-2fd8b.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDT5uJ1NLt8zYYTA2FMBsV2Ww8m9LHwbig',
-    appId: '1:117790585867:ios:536071b4bb3936c4ec830e',
-    messagingSenderId: '117790585867',
-    projectId: 'qrcode-720b6',
-    storageBucket: 'qrcode-720b6.appspot.com',
-    iosBundleId: 'com.example.qrCodeApp',
+    apiKey: 'AIzaSyBAbpkdicreTpX9ZPqWzG_hftn_vy4gzWs',
+    appId: '1:1074070918946:ios:94f1a8995a97d67c91777b',
+    messagingSenderId: '1074070918946',
+    projectId: 'parcode-2fd8b',
+    storageBucket: 'parcode-2fd8b.appspot.com',
+    iosBundleId: 'com.example.parcode',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDT5uJ1NLt8zYYTA2FMBsV2Ww8m9LHwbig',
-    appId: '1:117790585867:ios:cf0ee850cc8c3ab5ec830e',
-    messagingSenderId: '117790585867',
-    projectId: 'qrcode-720b6',
-    storageBucket: 'qrcode-720b6.appspot.com',
-    iosBundleId: 'com.example.qrCodeApp.RunnerTests',
+    apiKey: 'AIzaSyBAbpkdicreTpX9ZPqWzG_hftn_vy4gzWs',
+    appId: '1:1074070918946:ios:d2d5b4b0afd932b191777b',
+    messagingSenderId: '1074070918946',
+    projectId: 'parcode-2fd8b',
+    storageBucket: 'parcode-2fd8b.appspot.com',
+    iosBundleId: 'com.example.parcode.RunnerTests',
   );
 }

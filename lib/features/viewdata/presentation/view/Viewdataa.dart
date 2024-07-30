@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, unused_field, library_private_types_in_public_api, file_names, avoid_print, must_be_immutable, unused_local_variable, no_leading_underscores_for_local_identifiers
 
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +12,7 @@ import 'package:parcode/features/home/home.dart';
 import 'package:parcode/features/viewdata/cubit/cubit/data_cubit.dart';
 
 import 'package:universal_html/html.dart' as html;
+
 class ViewDataScreen extends StatefulWidget {
   ViewDataScreen({super.key});
   static String id = 'viewdata';
@@ -20,6 +22,8 @@ class ViewDataScreen extends StatefulWidget {
 }
 
 class _ViewDataScreenState extends State<ViewDataScreen> {
+  String? selectedItem;
+
   @override
   void initState() {
     super.initState();
@@ -32,65 +36,22 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
     super.dispose();
   }
 
+  Future<List<String>> fetchCompanyNames() async {
+    CollectionReference qrcodes = FirebaseFirestore.instance.collection('qrcodes');
+
+    QuerySnapshot querySnapshot = await qrcodes.get();
+    List<String> companyNames = querySnapshot.docs
+        .map((doc) => (doc.data() as Map<String, dynamic>)['company'] as String)
+        .toList();
+
+    return companyNames;
+  }
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
-    final List<String> _dropdownItems = [
-      'Company 1',
-      'Company 2',
-      'Company 3',
-      'Company 4',
-    ];
- Future<void> generateExcel(List<Map<String, dynamic>> qrcodes) async {
-    var excel = Excel.createExcel();
 
-    Sheet sheetObject = excel['QR Codes'];
-    sheetObject.appendRow([
-      'ID',
-      'Barcode \n الباركود',
-      'DateTime \n التاريخ',
-      'Company \n الشركة',
-    ]);
-
-    for (var code in qrcodes) {
-      sheetObject.appendRow([
-        code['id'],
-        code['qrCode'],
-        code['datetime'],
-        code['company'],
-      ]);
-    }
-var bytes = excel.encode();
-
-      if (bytes == null) {
-        throw Exception('Failed to encode Excel file');
-      }
-
-      // Create a Blob from the bytes
-      final blob = html.Blob([bytes],
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-      // Create a download link and trigger it
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement(href: url)
-        ..setAttribute('download', 'QRCodesquary.xlsx')
-        ..click();
-      html.Url.revokeObjectUrl(url);
-
-      // Show success dialog
-      customAwesomeDialog(
-        context: context,
-        dialogType: DialogType.success,
-        title: 'Success',
-        description:
-            'Excel file downloaded successfully! \n تم تنزيل ملف اكسل بنجاح',
-        buttonColor: const Color(0xff00CA71),
-      ).show();
-
-  }
-    // The selected item
-    String? selectedItem;
     return BlocProvider(
       create: (context) => DataCubit(),
       child: BlocConsumer<DataCubit, DataState>(
@@ -136,11 +97,10 @@ var bytes = excel.encode();
                 ),
                 IconButton(
                   icon: const Icon(Icons.download, color: Colors.white),
-                        onPressed: () async {
-                        final qrcodes = DataCubit.get(context).qrcodes;
-                        await generateExcel(qrcodes);
-                      },
-                   
+                  onPressed: () async {
+                    final qrcodes = DataCubit.get(context).qrcodes;
+                    await generateExcel(qrcodes);
+                  },
                 ),
               ],
             ),
@@ -300,41 +260,56 @@ var bytes = excel.encode();
                     ),
                   ),
                   Padding(
-                    padding:EdgeInsets.only(
-                        bottom: height * 0.05, left: 16, right: 16,),
+                    padding: EdgeInsets.only(
+                      bottom: height * 0.05,
+                      left: 16,
+                      right: 16,
+                    ),
                     child: Container(
                       height: height * 0.07,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(
                           width: 2,
-                          color:  const Color(0xFF88AACA),
+                          color: const Color(0xFF88AACA),
                         ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Center(
-                          child: DropdownSearch<String>(
-                            popupProps: const PopupProps.menu(
-                              showSearchBox: true,
-                            ),
-                            items: _dropdownItems,
-                            dropdownDecoratorProps: DropDownDecoratorProps(
-                              dropdownSearchDecoration: InputDecoration(
-                                labelText: selectedItem ?? "Select a company",
-                                hintText: "Search for a company",
-                              ),
-                            ),
-                            selectedItem: selectedItem,
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                selectedItem = newValue;
-                  
-                                DataCubit.get(context).searchQuery = newValue!;
-                  
-                                DataCubit.get(context).loadDataCompany(
-                                    DataCubit.get(context).searchQuery);
-                              });
+                          child: FutureBuilder<List<String>>(
+                            future: fetchCompanyNames(),
+                            builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                return const Text('No company names found');
+                              } else {
+                                return DropdownSearch<String>(
+                                  popupProps: const PopupProps.menu(
+                                    showSearchBox: true,
+                                  ),
+                                  items: snapshot.data!,
+                                  dropdownDecoratorProps:const DropDownDecoratorProps(
+                                    dropdownSearchDecoration: InputDecoration(
+                                    
+                                    ),
+                                  ),
+                                  selectedItem: selectedItem,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      selectedItem = newValue;
+
+                                      DataCubit.get(context).searchQuery = newValue!;
+
+                                      DataCubit.get(context).loadDataCompany(
+                                          DataCubit.get(context).searchQuery);
+                                    });
+                                  },
+                                );
+                              }
                             },
                           ),
                         ),
@@ -394,14 +369,15 @@ var bytes = excel.encode();
                                               color: Colors.red,
                                             ),
                                             onPressed: () async {
-                                              await DataCubit.get(context)
-                                                  .deleteData(
-                                                      code['id'], context);
-                                              Navigator.pushReplacement(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          ViewDataScreen()));
+                                              String docId = code['id'].toString(); // Ensure docId is a string
+        await DataCubit.get(context).deleteData(docId, context);
+        setState(() {
+         
+        });
+                                            Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ViewDataScreen()));
                                             },
                                           ),
                                         ),
@@ -413,8 +389,6 @@ var bytes = excel.encode();
                             );
                     },
                   ),
-                  
-                  
                 ],
               ),
             ),
@@ -422,5 +396,52 @@ var bytes = excel.encode();
         },
       ),
     );
+  }
+
+  Future<void> generateExcel(List<Map<String, dynamic>> qrcodes) async {
+    var excel = Excel.createExcel();
+
+    Sheet sheetObject = excel['QR Codes'];
+    sheetObject.appendRow([
+      'ID',
+      'Barcode \n الباركود',
+      'DateTime \n التاريخ',
+      'Company \n الشركة',
+    ]);
+
+    for (var code in qrcodes) {
+      sheetObject.appendRow([
+        code['id'],
+        code['qrCode'],
+        code['datetime'],
+        code['company'],
+      ]);
+    }
+    var bytes = excel.encode();
+
+    if (bytes == null) {
+      throw Exception('Failed to encode Excel file');
+    }
+
+    // Create a Blob from the bytes
+    final blob = html.Blob([bytes],
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+    // Create a download link and trigger it
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute('download', 'QRCodesquary.xlsx')
+      ..click();
+    html.Url.revokeObjectUrl(url);
+
+    // Show success dialog
+    customAwesomeDialog(
+      context: context,
+      dialogType: DialogType.success,
+      title: 'Success',
+      description:
+          'Excel file downloaded successfully! \n تم تنزيل ملف اكسل بنجاح',
+      buttonColor: const Color(0xff00CA71),
+    ).show();
   }
 }

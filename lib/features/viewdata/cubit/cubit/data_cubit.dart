@@ -37,38 +37,39 @@ class DataCubit extends Cubit<DataState> {
     });
   }
 
-  Future<void> deleteData(String docId, BuildContext context) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('qrcodes')
-          .doc(docId)
-          .delete();
-      await rearrangeAndSetCurrentId();
-      emit(DataDeletedSuccessfully());
+Future<void> deleteData(String docId, BuildContext context) async {
+  try {
+    await FirebaseFirestore.instance
+        .collection('qrcodes')
+        .doc(docId)
+        .delete();
+    await rearrangeAndSetCurrentId();
+    emit(DataDeletedSuccessfully());
 
-      // Show AlertDialog
-      customAwesomeDialog(
-        context: context,
-        dialogType: DialogType.success,
-        title: 'Success',
-        description:
-            'The Barcode deleted successfully! \n تم حذف هذا الباركود بنجاح',
-        buttonColor: const Color(0xff00CA71),
-      ).show();
-    } catch (e) {
-      emit(DataDeletionError());
+    // Show AlertDialog
+    customAwesomeDialog(
+      context: context,
+      dialogType: DialogType.success,
+      title: 'Success',
+      description:
+          'The Barcode deleted successfully! \n تم حذف هذا الباركود بنجاح',
+      buttonColor: const Color(0xff00CA71),
+    ).show();
+  } catch (e) {
+    emit(DataDeletionError());
 
-      customAwesomeDialog(
-        context: context,
-        dialogType: DialogType.error,
-        title: 'Error',
-        description: 'Error deleting the Barcode \n خطأ في حذف هذا الباركود',
-        buttonColor: const Color(0xffD93E47),
-      ).show();
+    customAwesomeDialog(
+      context: context,
+      dialogType: DialogType.error,
+      title: 'Error',
+      description: 'Error deleting the Barcode \n خطأ في حذف هذا الباركود',
+      buttonColor: const Color(0xffD93E47),
+    ).show();
 
-      print('Error: $e');
-    }
+    print('Error in deleteData: $e');
   }
+}
+
 
   Future<void> deleteAllData(BuildContext context) async {
     try {

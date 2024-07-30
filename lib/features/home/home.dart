@@ -1,13 +1,14 @@
-import 'package:dropdown_search/dropdown_search.dart';
+
 import 'package:parcode/core/utilis/constant.dart';
 import 'package:parcode/features/excel/presentation/view/excel.dart';
 import 'package:parcode/features/scanner/presentation/view/scanner.dart';
+import 'package:parcode/features/scanner/presentation/widget/customformfield.dart';
 import 'package:parcode/features/viewdata/presentation/view/Viewdataa.dart';
 import 'package:flutter/material.dart';
 import 'package:parcode/core/widgets/CustomButton.dart';
 
 class Core extends StatefulWidget {
-   Core({super.key});
+  Core({super.key});
   static String id = 'homepage';
 
   @override
@@ -15,12 +16,7 @@ class Core extends StatefulWidget {
 }
 
 class _CoreState extends State<Core> {
-  final List<String> _dropdownItems = [
-    'Company 1',
-    'Company 2',
-    'Company 3',
-    'Company 4',
-  ];
+  final TextEditingController company = TextEditingController();
 
   // The selected item
   String? selectedItem;
@@ -66,62 +62,52 @@ class _CoreState extends State<Core> {
               child: Column(
                 children: [
                   Padding(padding: EdgeInsets.only(top: height * 0.07)),
-
                   SizedBox(
                       width: width * 0.3,
                       height: height * 0.2,
                       child: Image.asset('assets/images/select (1).png')),
-
-                             const Text('Please Choose Your Company ....',
+                  const Text('Please Choose Your Company ....',
                       style: TextStyle(
                           color: Colors.blueGrey,
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1)),
-                            SizedBox(height: height * 0.04), 
-                        Container(
+                  SizedBox(height: height * 0.04),
+                  Container(
                     width: width * 0.84,
                     height: height * 0.07,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         width: 2,
                         color: primarycolor,
                       ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(
-                        child: DropdownSearch<String>(
-                          popupProps: const PopupProps.menu(
-                            showSearchBox: true,
-                          ),
-                          items: _dropdownItems,
-                          dropdownDecoratorProps:  DropDownDecoratorProps(
-                            dropdownSearchDecoration: InputDecoration(
-                              labelText:selectedItem?? "Select a company",
-                              hintText: "Search for a company",
-                            ),
-                          ),
-                          selectedItem: selectedItem,
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              selectedItem = newValue;
-                            });
-                          },
-                        ),
+                    child: Center(
+                        child: CustomFormField(
+                      hint: 'Enter your Company',
+                      preicon: const Icon(
+                        Icons.edit,
+                        size: 19,
+                        color: Colors.black,
                       ),
-                    ),
+                      controller: company,
+                      onsubmit: (value) {
+                        setState(() {
+                          selectedItem = company.text;
+                        });
+                        selectedItem = company.text;
+                      },
+                      ispass: false,
+                    )),
                   ),
-                  SizedBox(height: height * 0.04),  
+                  SizedBox(height: height * 0.04),
                   const Text('Please Choose Your Operation ....',
                       style: TextStyle(
                           color: Colors.blueGrey,
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1)),
-
-                   
                   Padding(
                     padding: EdgeInsets.only(
                         top: height * 0.091, bottom: height * 0.04),
@@ -129,7 +115,9 @@ class _CoreState extends State<Core> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => Scanner(company:selectedItem??'')),
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    Scanner(company: selectedItem ?? '')),
                           );
                         },
                         child: const customButton(text: "Scan QR Code")),
@@ -153,7 +141,7 @@ class _CoreState extends State<Core> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>  ViewDataScreen()),
+                              builder: (context) => ViewDataScreen()),
                         );
                       },
                       child: const customButton(text: "View QR Code")),
