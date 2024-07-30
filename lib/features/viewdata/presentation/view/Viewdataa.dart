@@ -23,29 +23,11 @@ class ViewDataScreen extends StatefulWidget {
 
 class _ViewDataScreenState extends State<ViewDataScreen> {
   String? selectedItem;
-  Future<List<String>>? _companiesFuture;
 
   @override
   void initState() {
     super.initState();
-    // Fetch company names when the widget is initialized
-    _companiesFuture = _fetchCompanyNames();
-  }
-
-  // Fetch company names from Firestore
-  Future<List<String>> _fetchCompanyNames() async {
-    try {
-      CollectionReference companies =
-          FirebaseFirestore.instance.collection('companies');
-      QuerySnapshot querySnapshot = await companies.get();
-      List<String> companyNames = querySnapshot.docs
-          .map((doc) => doc['Company Name'] as String)
-          .toList();
-      return companyNames;
-    } catch (e) {
-      print("Error fetching company names: $e");
-      return [];
-    }
+    // Initial setup, if needed
   }
 
   @override
@@ -297,52 +279,42 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                         padding: const EdgeInsets.all(8.0),
                         child: Center(
                           child: FutureBuilder<List<String>>(
-                            future: _companiesFuture,
-                            builder: (context, snapshot) {
+                            future: fetchCompanyNames(),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<List<String>> snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
-                                return Center(
-                                    child: CircularProgressIndicator());
-                              }
-
-                              if (snapshot.hasError) {
-                                return Center(
-                                    child: Text('Error: ${snapshot.error}'));
-                              }
-
-                              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                                return Center(
-                                    child: Text('No companies found'));
-                              }
-
-                              return DropdownSearch<String>(
-                                popupProps: const PopupProps.menu(
-                                  showSearchBox: true,
-                                ),
-                                items: snapshot.data!,
-                                dropdownDecoratorProps:
-                                    const DropDownDecoratorProps(
-                                  dropdownSearchDecoration: InputDecoration(
-                                    labelText: 'Select company',
+                                return const CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else if (!snapshot.hasData ||
+                                  snapshot.data!.isEmpty) {
+                                return const Text('No company names found');
+                              } else {
+                                return DropdownSearch<String>(
+                                  popupProps: const PopupProps.menu(
+                                    showSearchBox: true,
                                   ),
-                                ),
-                                selectedItem: selectedItem,
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    selectedItem = newValue;
-                                  });
+                                  items: snapshot.data!,
+                                  dropdownDecoratorProps:
+                                      const DropDownDecoratorProps(
+                                    dropdownSearchDecoration: InputDecoration(
+                                        labelText: 'select company'),
+                                  ),
+                                  selectedItem: selectedItem,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      selectedItem = newValue;
 
-                                  // Example action based on selection
-                                  if (newValue != null) {
-                                    // Perform action, e.g., load data based on the selected company
-                                    print('Selected company: $newValue');
-                                    DataCubit.get(context).searchQuery =
-                                        newValue;
-                                    DataCubit.get(context)
-                                        .loadDataCompany(newValue);
-                                  }
-                                },
-                              );
+                                      DataCubit.get(context).searchQuery =
+                                          newValue!;
+
+                                      DataCubit.get(context).loadDataCompany(
+                                          DataCubit.get(context).searchQuery);
+                                    });
+                                  },
+                                );
+                              }
                             },
                           ),
                         ),
