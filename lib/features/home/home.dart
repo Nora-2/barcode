@@ -1,8 +1,10 @@
 // ignore_for_file: avoid_print
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:parcode/core/utilis/constant.dart';
+import 'package:parcode/core/widgets/AwesomeDiaglog.dart';
 import 'package:parcode/core/widgets/toppart.dart';
 import 'package:parcode/features/EnterCompanies.dart';
 import 'package:parcode/features/excel/presentation/view/excel.dart';
@@ -141,11 +143,23 @@ class _CoreState extends State<Core> {
                         top: height * 0.041, bottom: height * 0.04),
                     child: GestureDetector(
                         onTap: () {
+                          if (selectedItem==null || selectedItem=='') {
+    customAwesomeDialog(
+            context: context,
+            dialogType: DialogType.info,
+            title: 'Info',
+            description:
+                'Please choose the company ... \n ...من فضلك اخترالشركة',
+            buttonColor: primarycolor)
+        .show();
+    return;
+  }
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    Scanner(company: selectedItem ?? '')),
+                                    Scanner(company: selectedItem! )),
                           );
                         },
                         child: const customButton(text: "Scan QR Code")),

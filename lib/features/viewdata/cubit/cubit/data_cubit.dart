@@ -168,7 +168,7 @@ class DataCubit extends Cubit<DataState> {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('qrcodes')
-          .where('qrCode', isEqualTo: qrCode).orderBy('id')
+          .where('qrCode', isEqualTo: qrCode)
           .get();
       return querySnapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
@@ -184,7 +184,7 @@ class DataCubit extends Cubit<DataState> {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('qrcodes')
-          .where('company', isEqualTo: company).orderBy('id')
+          .where('company', isEqualTo: company)
           .get();
       return querySnapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
