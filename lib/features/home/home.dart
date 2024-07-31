@@ -16,10 +16,8 @@ import 'package:parcode/core/widgets/CustomButton.dart';
 class Core extends StatefulWidget {
   const Core({super.key});
   static String id = 'homepage';
-  
 
   @override
-  
   State<Core> createState() => _CoreState();
 }
 
@@ -37,12 +35,14 @@ class _CoreState extends State<Core> {
 
   Future<void> _fetchCompanyNames() async {
     try {
-
-      CollectionReference companies = FirebaseFirestore.instance.collection('companies');
+      CollectionReference companies =
+          FirebaseFirestore.instance.collection('companies');
       QuerySnapshot querySnapshot = await companies.get();
 
       // Extract company names
-      List<String> companyNames = querySnapshot.docs.map((doc) => doc['Company Name'] as String).toList();
+      List<String> companyNames = querySnapshot.docs
+          .map((doc) => doc['Company Name'] as String)
+          .toList();
 
       setState(() {
         _dropdownItems = companyNames;
@@ -60,7 +60,11 @@ class _CoreState extends State<Core> {
       backgroundColor: primarycolor,
       body: Column(
         children: [
-          toppart(height: height, width: width,SpecificPage:const Entercompanies(),),
+          toppart(
+            height: height,
+            width: width,
+            SpecificPage: const Entercompanies(),
+          ),
           Container(
             height: height * 0.8,
             width: width,
@@ -95,41 +99,48 @@ class _CoreState extends State<Core> {
                         bottom: height * 0.05,
                         left: width * 0.16,
                         right: width * 0.16),
-                        child:      Container(
-                    width: width * 0.84,
-                    height: height * 0.09,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(
-                        width: 2,
-                        color: primarycolor,
+                    child: Container(
+                      width: width * 0.84,
+                      height: height * 0.09,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          width: 2,
+                          color: primarycolor,
+                        ),
                       ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(9.0),
-                      child: Center(
-                        child: DropdownSearch<String>(
-                          popupProps: const PopupProps.menu(
-                            showSearchBox: true,
-                          ),
-                          items: _dropdownItems,
-                          dropdownDecoratorProps: const DropDownDecoratorProps(
-                            dropdownSearchDecoration: InputDecoration(
-                              labelText: "Select a company",
-                              
+                      child: Padding(
+                        padding: const EdgeInsets.all(9.0),
+                        child: Center(
+                          child: DropdownSearch<String>(
+                            popupProps: const PopupProps.menu(
+                              showSearchBox: true,
                             ),
+                            items: _dropdownItems,
+                            dropdownDecoratorProps:
+                                const DropDownDecoratorProps(
+                              dropdownSearchDecoration: InputDecoration(
+                                labelText: "Select a company",
+                              ),
+                            ),
+                            selectedItem: selectedItem,
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                selectedItem = newValue;
+                              });
+                              if (newValue != null) {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          Scanner(company: newValue),
+                                    ));
+                              }
+                            },
                           ),
-                          selectedItem: selectedItem,
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              selectedItem = newValue;
-                            });
-                          },
                         ),
                       ),
                     ),
-                  ),
-                  
                   ),
                   SizedBox(height: height * 0.04),
                   const Text('Please Choose Your Operation ....',
@@ -143,23 +154,23 @@ class _CoreState extends State<Core> {
                         top: height * 0.041, bottom: height * 0.04),
                     child: GestureDetector(
                         onTap: () {
-                          if (selectedItem==null || selectedItem=='') {
-    customAwesomeDialog(
-            context: context,
-            dialogType: DialogType.info,
-            title: 'Info',
-            description:
-                'Please choose the company ... \n ...من فضلك اخترالشركة',
-            buttonColor: primarycolor)
-        .show();
-    return;
-  }
+                          if (selectedItem == null || selectedItem == '') {
+                            customAwesomeDialog(
+                                    context: context,
+                                    dialogType: DialogType.info,
+                                    title: 'Info',
+                                    description:
+                                        'Please choose the company ... \n ...من فضلك اخترالشركة',
+                                    buttonColor: primarycolor)
+                                .show();
+                            return;
+                          }
 
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    Scanner(company: selectedItem! )),
+                                    Scanner(company: selectedItem!)),
                           );
                         },
                         child: const customButton(text: "Scan QR Code")),

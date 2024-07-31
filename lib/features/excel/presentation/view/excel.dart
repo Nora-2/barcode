@@ -26,7 +26,7 @@ class _DownloadDataScreenState extends State<DownloadDataScreen> {
               backgroundColor: primarycolor,
               body: Column(
                 children: [
-                  toppart(height: height, width: width,SpecificPage: Core(),),
+                  toppart(height: height, width: width,SpecificPage: const Core(),),
                   Container(
                     height: height * 0.8,
                     width: width,

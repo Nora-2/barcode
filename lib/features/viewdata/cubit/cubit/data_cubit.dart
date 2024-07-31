@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, unnecessary_cast, avoid_print
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,6 +32,7 @@ class DataCubit extends Cubit<DataState> {
           .toList();
       _qrcodesController.add(qrcodes);
     }, onError: (error) {
+      
       print("Error fetching QR codes stream: $error");
       _qrcodesController.addError(error);
     });
@@ -69,6 +70,7 @@ class DataCubit extends Cubit<DataState> {
         description: 'Error deleting the Barcode \n خطأ في حذف هذا الباركود',
         buttonColor: const Color(0xffD93E47),
       ).show();
+      
       print('Error in deleteData: $e');
     }
   }
@@ -101,6 +103,7 @@ class DataCubit extends Cubit<DataState> {
         description: 'Error deleting all the Barcodes \n خطأ في حذف كل الباركود',
         buttonColor: const Color(0xffD93E47),
       ).show();
+     
       print('Error: $e');
     }
   }
