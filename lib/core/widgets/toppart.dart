@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:parcode/features/EnterCompanies.dart';
 
 
 // ignore: camel_case_types
@@ -20,7 +21,8 @@ class toppart extends StatelessWidget {
     return SizedBox(
       height: height * 0.2,
       width: width,
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
             padding: EdgeInsets.only(top: height * 0.03),
@@ -49,6 +51,21 @@ class toppart extends StatelessWidget {
                       letterSpacing: 1)),
             ),
           ),
+             Container(
+               padding: EdgeInsets.only(top: height * 0.03),
+            alignment: Alignment.topRight,
+            child: IconButton(
+               onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>const Entercompanies()),
+                );
+              },
+              icon: const Icon(
+                Icons.business,
+                color: Color.fromARGB(255, 242, 238, 238),
+              ),
+            ),)
         ],
       ),
     );

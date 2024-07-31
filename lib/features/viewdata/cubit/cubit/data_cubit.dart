@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, unused_field, avoid_print, unnecessary_cast
+// ignore_for_file: use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -37,52 +37,41 @@ class DataCubit extends Cubit<DataState> {
     });
   }
 
+  Future<void> deleteData(int docId, BuildContext context) async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('qrcodes')
+          .where('id', isEqualTo: docId)
+          .get();
 
-Future<void> deleteData(int docId, BuildContext context) async {
-  try {
-    // Get all documents where 'company' field matches the docId
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('qrcodes')
-        .where('id', isEqualTo: docId)
-        .get();
+      WriteBatch batch = FirebaseFirestore.instance.batch();
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
 
-    // Delete each document
-    for (QueryDocumentSnapshot doc in querySnapshot.docs) {
-      await doc.reference.delete();
+      await rearrangeAndSetCurrentId();
+
+      emit(DataDeletedSuccessfully());
+      customAwesomeDialog(
+        context: context,
+        dialogType: DialogType.success,
+        title: 'Success',
+        description: 'The Barcode deleted successfully! \n تم حذف هذا الباركود بنجاح',
+        buttonColor: const Color(0xff00CA71),
+      ).show();
+    } catch (e) {
+      emit(DataDeletionError());
+      customAwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        title: 'Error',
+        description: 'Error deleting the Barcode \n خطأ في حذف هذا الباركود',
+        buttonColor: const Color(0xffD93E47),
+      ).show();
+      print('Error in deleteData: $e');
     }
-
-    // Rearrange and set current ID if needed
-    await rearrangeAndSetCurrentId();
-
-    // Emit success state
-    emit(DataDeletedSuccessfully());
-
-    // Show success dialog
-    customAwesomeDialog(
-      context: context,
-      dialogType: DialogType.success,
-      title: 'Success',
-      description: 'The Barcode deleted successfully! \n تم حذف هذا الباركود بنجاح',
-      buttonColor: const Color(0xff00CA71),
-    ).show();
-  } catch (e) {
-    // Emit error state
-    emit(DataDeletionError());
-
-    // Show error dialog
-    customAwesomeDialog(
-      context: context,
-      dialogType: DialogType.error,
-      title: 'Error',
-      description: 'Error deleting the Barcode \n خطأ في حذف هذا الباركود',
-      buttonColor: const Color(0xffD93E47),
-    ).show();
-
-    // Print error for debugging
-    print('Error in deleteData: $e');
   }
-}
-
 
   Future<void> deleteAllData(BuildContext context) async {
     try {
@@ -93,29 +82,25 @@ Future<void> deleteData(int docId, BuildContext context) async {
         batch.delete(doc.reference);
       }
       await batch.commit();
+
       await _resetCurrentId();
       emit(AllDataDeletedSuccessfully());
-
       customAwesomeDialog(
         context: context,
         dialogType: DialogType.success,
         title: 'Success',
-        description:
-            'All Barcodes deleted successfully! \n تم حذف الباركود كل بنجاح',
+        description: 'All Barcodes deleted successfully! \n تم حذف الباركود كل بنجاح',
         buttonColor: const Color(0xff00CA71),
       ).show();
     } catch (e) {
       emit(DataDeletionError());
-
       customAwesomeDialog(
         context: context,
         dialogType: DialogType.error,
         title: 'Error',
-        description:
-            'Error deleting all the Barcodes \n خطأ في حذف كل الباركود',
+        description: 'Error deleting all the Barcodes \n خطأ في حذف كل الباركود',
         buttonColor: const Color(0xffD93E47),
       ).show();
-
       print('Error: $e');
     }
   }
@@ -133,7 +118,6 @@ Future<void> deleteData(int docId, BuildContext context) async {
         batch.update(doc.reference, {'id': currentId});
         currentId++;
       }
-
       await batch.commit();
 
       DocumentReference idRef =
@@ -151,36 +135,29 @@ Future<void> deleteData(int docId, BuildContext context) async {
   }
 
   Future<List<Map<String, dynamic>>> queryQRCodeById(int id) async {
-    CollectionReference qrcodes =
-        FirebaseFirestore.instance.collection('qrcodes');
-    print('Querying with ID: $id'); // Debug print
-    QuerySnapshot querySnapshot =
-        await qrcodes.where('id', isEqualTo: id).get();
-    print(
-        'Query Snapshot: ${querySnapshot.docs.map((doc) => doc.data()).toList()}'); // Debug print
-    return querySnapshot.docs
-        .map((doc) => doc.data() as Map<String, dynamic>)
-        .toList();
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('qrcodes')
+          .where('id', isEqualTo: id)
+          .get();
+      return querySnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      print('Error querying QR code by ID: $e');
+      return [];
+    }
   }
 
   Future<List<Map<String, dynamic>>> queryQRCodeByPartialDate(
       String partialDate) async {
-    CollectionReference qrcodes =
-        FirebaseFirestore.instance.collection('qrcodes');
-    print('Querying with partial datetime: $partialDate'); // Debug print
-
     try {
-      // Fetch all documents
-      QuerySnapshot querySnapshot = await qrcodes.get();
-
-      // Filter results locally
-      List<Map<String, dynamic>> results = querySnapshot.docs
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('qrcodes').orderBy('id').get();
+      return querySnapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .where((data) => (data['datetime'] as String).contains(partialDate))
           .toList();
-
-      print('Filtered Results: $results'); // Debug print
-      return results;
     } catch (e) {
       print('Error querying QR codes by partial date: $e');
       return [];
@@ -188,30 +165,34 @@ Future<void> deleteData(int docId, BuildContext context) async {
   }
 
   Future<List<Map<String, dynamic>>> queryQRCodeByCode(String qrCode) async {
-    CollectionReference qrcodes =
-        FirebaseFirestore.instance.collection('qrcodes');
-    print('Querying with QR code: $qrCode'); // Debug print
-    QuerySnapshot querySnapshot =
-        await qrcodes.where('qrCode', isEqualTo: qrCode).get();
-    print(
-        'Query Snapshot: ${querySnapshot.docs.map((doc) => doc.data()).toList()}'); // Debug print
-    return querySnapshot.docs
-        .map((doc) => doc.data() as Map<String, dynamic>)
-        .toList();
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('qrcodes')
+          .where('qrCode', isEqualTo: qrCode).orderBy('id')
+          .get();
+      return querySnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      print('Error querying QR code by code: $e');
+      return [];
+    }
   }
 
   Future<List<Map<String, dynamic>>> queryQRCodeByCompany(
       String company) async {
-    CollectionReference qrcodes =
-        FirebaseFirestore.instance.collection('qrcodes');
-    print('Querying with company: $company'); // Debug print
-    QuerySnapshot querySnapshot =
-        await qrcodes.where('company', isEqualTo: company).get();
-    print(
-        'Query Snapshot: ${querySnapshot.docs.map((doc) => doc.data()).toList()}'); // Debug print
-    return querySnapshot.docs
-        .map((doc) => doc.data() as Map<String, dynamic>)
-        .toList();
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('qrcodes')
+          .where('company', isEqualTo: company).orderBy('id')
+          .get();
+      return querySnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      print('Error querying QR code by company: $e');
+      return [];
+    }
   }
 
   Future<void> loadDataCompany(String company) async {
@@ -234,9 +215,7 @@ Future<void> deleteData(int docId, BuildContext context) async {
     if (id.isEmpty) {
       qrcodes = [];
     } else {
-      int parsedId;
-      parsedId = int.parse(id);
-      qrcodes = await queryQRCodeById(parsedId);
+      qrcodes = await queryQRCodeById(int.parse(id));
     }
     emit(DataLoaded());
   }
@@ -258,7 +237,7 @@ Future<void> deleteData(int docId, BuildContext context) async {
       lastDate: DateTime(2101),
     );
 
-    if (picked != null && picked != DateTime.now()) {
+    if (picked != null) {
       final formattedDate = "${picked.year}/${picked.month}/${picked.day}";
       searchControllerDatetime.text = formattedDate;
       searchQuery = formattedDate;

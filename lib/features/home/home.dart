@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:parcode/core/utilis/constant.dart';
@@ -5,7 +7,6 @@ import 'package:parcode/core/widgets/toppart.dart';
 import 'package:parcode/features/EnterCompanies.dart';
 import 'package:parcode/features/excel/presentation/view/excel.dart';
 import 'package:parcode/features/scanner/presentation/view/scanner.dart';
-import 'package:parcode/features/scanner/presentation/widget/customformfield.dart';
 import 'package:parcode/features/viewdata/presentation/view/Viewdataa.dart';
 import 'package:flutter/material.dart';
 import 'package:parcode/core/widgets/CustomButton.dart';
@@ -23,10 +24,7 @@ class Core extends StatefulWidget {
 class _CoreState extends State<Core> {
   final TextEditingController company = TextEditingController();
 
-  // The selected item
   String? selectedItem;
-
-  // List to store dropdown items
   List<String> _dropdownItems = [];
 
   @override
@@ -35,13 +33,10 @@ class _CoreState extends State<Core> {
     _fetchCompanyNames();
   }
 
-  // Fetch company names from Firebase
   Future<void> _fetchCompanyNames() async {
     try {
-      // Access Firestore collection
-      CollectionReference companies = FirebaseFirestore.instance.collection('companies');
 
-      // Fetch documents
+      CollectionReference companies = FirebaseFirestore.instance.collection('companies');
       QuerySnapshot querySnapshot = await companies.get();
 
       // Extract company names
@@ -63,7 +58,7 @@ class _CoreState extends State<Core> {
       backgroundColor: primarycolor,
       body: Column(
         children: [
-          toppart(height: height, width: width,SpecificPage: Entercompanies(),),
+          toppart(height: height, width: width,SpecificPage:const Entercompanies(),),
           Container(
             height: height * 0.8,
             width: width,
@@ -116,7 +111,7 @@ class _CoreState extends State<Core> {
                             showSearchBox: true,
                           ),
                           items: _dropdownItems,
-                          dropdownDecoratorProps:  DropDownDecoratorProps(
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
                             dropdownSearchDecoration: InputDecoration(
                               labelText: "Select a company",
                               

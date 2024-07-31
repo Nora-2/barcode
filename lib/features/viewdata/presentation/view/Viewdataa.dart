@@ -37,16 +37,20 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
   }
 
   Future<List<String>> fetchCompanyNames() async {
-    CollectionReference qrcodes =
-        FirebaseFirestore.instance.collection('qrcodes');
+  CollectionReference qrcodes = FirebaseFirestore.instance.collection('qrcodes');
 
-    QuerySnapshot querySnapshot = await qrcodes.get();
-    List<String> companyNames = querySnapshot.docs
-        .map((doc) => (doc.data() as Map<String, dynamic>)['company'] as String)
-        .toList();
+  QuerySnapshot querySnapshot = await qrcodes.get();
 
-    return companyNames;
-  }
+  // Use a Set to ensure uniqueness
+  Set<String> companyNamesSet = querySnapshot.docs
+      .map((doc) => (doc.data() as Map<String, dynamic>)['company'] as String)
+      .toSet(); // Convert to Set to remove duplicates
+
+  // Convert Set to List
+  List<String> companyNames = companyNamesSet.toList();
+
+  return companyNames;
+}
 
   @override
   Widget build(BuildContext context) {
@@ -321,7 +325,7 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                       ),
                     ),
                   ),
-                  StreamBuilder<List<Map<String, dynamic>>>(
+                          StreamBuilder<List<Map<String, dynamic>>>(
                     stream: DataCubit.get(context).qrcodesStream,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -333,65 +337,77 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                       }
 
                       var qrcodes = DataCubit.get(context).qrcodes;
+                      
                       print(qrcodes);
                       return qrcodes.isEmpty
                           ? const Text(
                               'No data exist') // Return an empty container if no data is found
                           : FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: DataTable(
-                                columns: const [
-                                  DataColumn(label: Text('ID')),
-                                  DataColumn(
-                                      label: Text('Barcode \n الباركود')),
-                                  DataColumn(
-                                      label: Text('DateTime \n التاريخ')),
-                                  DataColumn(label: Text('Company \n الشركة')),
-                                  DataColumn(label: Text('Actions')),
-                                ],
-                                rows: qrcodes.map<DataRow>((code) {
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(SizedBox(
-                                          width: width * .005,
-                                          child: Text('${code['id']}'))),
-                                      DataCell(SizedBox(
-                                        width: width * .2,
-                                        child: Text('${code['qrCode']}'),
-                                      )),
-                                      DataCell(SizedBox(
-                                          width: width * .2,
-                                          child: Text('${code['datetime']}'))),
-                                      DataCell(SizedBox(
-                                          width: width * .2,
-                                          child: Text('${code['company']}'))),
-                                      DataCell(
-                                        SizedBox(
-                                          width: width * .05,
-                                          child: IconButton(
-                                            icon: const Icon(
-                                              Icons.delete,
-                                              color: Colors.red,
-                                            ),
-                                            onPressed: () async {
-                                              int docId = code[
-                                                  'id']; // Ensure docId is a string
-                                              await DataCubit.get(context)
-                                                  .deleteData(docId, context);
-                                              setState(() {
-                                                DataCubit.get(context)
-                                                    .qrcodes
-                                                    .removeWhere((element) =>
-                                                        element['id'] ==
-                                                        code['id']);
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
+            fit: BoxFit.scaleDown,
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text('ID')),
+                DataColumn(label: Text('Barcode \n الباركود')),
+                DataColumn(label: Text('DateTime \n التاريخ')),
+                DataColumn(label: Text('Company \n الشركة')),
+                DataColumn(label: Text('Actions')),
+              ],
+              rows: qrcodes.asMap().entries.map<DataRow>((entry) {
+                int index = entry.key;
+                Map<String, dynamic> code = entry.value;
+
+                return DataRow(
+                  cells: [
+                    DataCell(SizedBox(
+                      width: width * .1,
+                      child: Text('${index + 1}'), // Display row index
+                    )),
+                    DataCell(SizedBox(
+                      width: width * .2,
+                      child: Text('${code['qrCode']}'),
+                    )),
+                    DataCell(SizedBox(
+                      width: width * .2,
+                      child: Text('${code['datetime']}'),
+                    )),
+                    DataCell(SizedBox(
+                      width: width * .2,
+                      child: Text('${code['company']}'),
+                    )),
+                    DataCell(
+                      GestureDetector(
+                        onTap: () async {
+                          int docId = code['id']; // Ensure docId is a string
+                          await DataCubit.get(context).deleteData(docId, context);
+                          setState(() {
+                            DataCubit.get(context).qrcodes.removeWhere(
+                                (element) => element['id'] == code['id']);
+                          });
+                          DataCubit.get(context).qrcodes.sort((a, b) => (a['id'] as int).compareTo(b['id'] as int));
+                        },
+                        child: SizedBox(
+                          width: width * .05,
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                            ),
+                            onPressed: () async {
+                          int docId = code['id']; // Ensure docId is a string
+                          await DataCubit.get(context).deleteData(docId, context);
+                          setState(() {
+                            DataCubit.get(context).qrcodes.removeWhere(
+                                (element) => element['id'] == code['id']);
+                          });
+                          DataCubit.get(context).qrcodes.sort((a, b) => (a['id'] as int).compareTo(b['id'] as int));
+                        },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
                               ),
                             );
                     },
