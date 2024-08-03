@@ -473,7 +473,7 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                                         );
                                       }).toList(),
                                     ),
-         ElevatedButton(
+        ElevatedButton(
   onPressed: selectedQRCodes.isEmpty
       ? null
       : () async {
@@ -493,18 +493,13 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
           overlayState.insert(overlayEntry);
 
           try {
-            // Use a local copy of selectedQRCodes to avoid modifying the list while iterating
-            var itemsToDelete = List<Map<String, dynamic>>.from(selectedQRCodes);
-
-            for (var code in itemsToDelete) {
-              int docId = code['id'];
-              await DataCubit.get(context).deleteData(docId, context);
-              DataCubit.get(context).qrcodes.removeWhere((element) =>
-                  element['id'] == docId);
-            }
+            var idsToDelete = selectedQRCodes.map((code) => code['id'] as int).toList();
+            await DataCubit.get(context).deleteselectedData(idsToDelete, context);
 
             setState(() {
               selectedQRCodes.clear();
+              DataCubit.get(context).qrcodes.removeWhere((element) =>
+                  idsToDelete.contains(element['id']));
               DataCubit.get(context).qrcodes.sort((a, b) =>
                   (a['id'] as int).compareTo(b['id'] as int));
             });

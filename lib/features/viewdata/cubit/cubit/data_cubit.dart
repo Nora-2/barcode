@@ -38,6 +38,46 @@ class DataCubit extends Cubit<DataState> {
     });
   }
 
+Future<void> deleteselectedData(List<int> docIds, BuildContext context) async {
+  try {
+    WriteBatch batch = FirebaseFirestore.instance.batch();
+    
+    for (int docId in docIds) {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('qrcodes')
+          .where('id', isEqualTo: docId)
+          .get();
+
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+    }
+
+    await batch.commit();
+    await rearrangeAndSetCurrentId();
+
+    emit(DataDeletedSuccessfully());
+    customAwesomeDialog(
+      context: context,
+      dialogType: DialogType.success,
+      title: 'Success',
+      description: 'The selected Barcodes deleted successfully!',
+      buttonColor: const Color(0xff00CA71),
+    ).show();
+  } catch (e) {
+    emit(DataDeletionError());
+    customAwesomeDialog(
+      context: context,
+      dialogType: DialogType.error,
+      title: 'Error',
+      description: 'Error deleting the selected Barcodes',
+      buttonColor: const Color(0xffD93E47),
+    ).show();
+
+    print('Error in deleteData: $e');
+  }
+}
+
   Future<void> deleteData(int docId, BuildContext context) async {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
