@@ -16,11 +16,11 @@ class AppRoutes {
   static final routes = {
     
     welcomePage.id: (context) => const welcomePage(),
-    Entercompanies.id: (context) => Entercompanies(),
+    Entercompanies.id: (context) => const Entercompanies(),
     QRViewExample.id: (context) => const QRViewExample(),
-    Core.id: (context) =>  Core(),
+    Core.id: (context) =>  const Core(),
     DownloadDataScreen.id: (context) => const DownloadDataScreen(),
-    ViewDataScreen.id: (context) =>  ViewDataScreen(),
+    ViewDataScreen.id: (context) =>  const ViewDataScreen(),
    
   };
 }

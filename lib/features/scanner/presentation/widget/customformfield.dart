@@ -38,6 +38,7 @@ class _CustomFormFieldState extends State<CustomFormField> {
   void initState() {
     super.initState();
     _focusNode = FocusNode();
+    _focusNode.requestFocus();
   }
 
   @override

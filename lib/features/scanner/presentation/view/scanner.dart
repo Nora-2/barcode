@@ -28,7 +28,7 @@ class _ScannerState extends State<Scanner> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            toppart(height: height, width: width,SpecificPage: Core(),),
+            toppart(height: height, width: width,SpecificPage: const Core(),),
             Container(
               height: height * 0.8,
               width: width,

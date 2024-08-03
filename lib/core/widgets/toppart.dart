@@ -8,11 +8,13 @@ class toppart extends StatelessWidget {
     super.key,
     required this.height,
     required this.width,
+    // ignore: non_constant_identifier_names
     required this.SpecificPage,
   });
 
   final double height;
   final double width;
+  // ignore: non_constant_identifier_names
   final Widget SpecificPage;
 
 
