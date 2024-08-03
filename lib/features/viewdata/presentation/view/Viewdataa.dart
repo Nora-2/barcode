@@ -94,11 +94,68 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                 IconButton(
                   icon: const Icon(Icons.delete_sweep, color: Colors.white),
                   onPressed: () async {
-                    await DataCubit.get(context).deleteAllData(context);
-                    Navigator.pushReplacement(
+                    bool? confirmDelete = await showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text(
+                            'Confirm Delete',
+                            style: TextStyle(
+                                fontSize: 27,
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'MulishRomanBold'),
+                          ),
+                          content: const Text(
+                            'Are you sure you want to delete all data?',
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w200,
+                                fontFamily: 'MulishRomanBold'),
+                          ),
+                          backgroundColor: Colors.white,
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context)
+                                    .pop(false); // Cancel the delete action
+                              },
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xff2452B1),
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context)
+                                    .pop(true); // Confirm the delete action
+                              },
+                              child: const Text(
+                                'Delete',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xff2452B1),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (confirmDelete == true) {
+                      await DataCubit.get(context).deleteAllData(context);
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const ViewDataScreen()));
+                            builder: (context) => const ViewDataScreen()),
+                      );
+                    }
                   },
                 ),
                 IconButton(
@@ -473,46 +530,84 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                                         );
                                       }).toList(),
                                     ),
-        ElevatedButton(
-  onPressed: selectedQRCodes.isEmpty
-      ? null
-      : () async {
-          OverlayEntry? overlayEntry;
-          OverlayState? overlayState = Overlay.of(context);
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.only(top: height * 0.08),
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          fixedSize: Size(
+                                            MediaQuery.of(context).size.width *
+                                                0.1,
+                                            MediaQuery.of(context).size.height *
+                                                0.05,
+                                          ),
+                                          foregroundColor: Colors.white,
+                                          backgroundColor: primarycolor,
+                                          shadowColor: Colors.grey,
+                                          elevation: 5,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        onPressed: selectedQRCodes.isEmpty
+                                            ? null
+                                            : () async {
+                                                OverlayEntry? overlayEntry;
+                                                OverlayState? overlayState =
+                                                    Overlay.of(context);
 
-          overlayEntry = OverlayEntry(
-            builder: (context) => const Positioned(
-              child: Material(
-                color: Colors.black45,
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-            ),
-          );
-          overlayState.insert(overlayEntry);
+                                                overlayEntry = OverlayEntry(
+                                                  builder: (context) =>
+                                                      const Positioned(
+                                                    child: Material(
+                                                      color: Colors.black45,
+                                                      child: Center(
+                                                        child:
+                                                            CircularProgressIndicator(),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                                overlayState
+                                                    .insert(overlayEntry);
 
-          try {
-            var idsToDelete = selectedQRCodes.map((code) => code['id'] as int).toList();
-            await DataCubit.get(context).deleteselectedData(idsToDelete, context);
+                                                try {
+                                                  var idsToDelete =
+                                                      selectedQRCodes
+                                                          .map((code) =>
+                                                              code['id'] as int)
+                                                          .toList();
+                                                  await DataCubit.get(context)
+                                                      .deleteselectedData(
+                                                          idsToDelete, context);
 
-            setState(() {
-              selectedQRCodes.clear();
-              DataCubit.get(context).qrcodes.removeWhere((element) =>
-                  idsToDelete.contains(element['id']));
-              DataCubit.get(context).qrcodes.sort((a, b) =>
-                  (a['id'] as int).compareTo(b['id'] as int));
-            });
-          } catch (e) {
-            print('Error deleting selected QR codes: $e');
-          } finally {
-            overlayEntry.remove();
-          }
-        },
-  child: const Text('Delete Selected'),
-)
-
-
+                                                  setState(() {
+                                                    selectedQRCodes.clear();
+                                                    DataCubit.get(context)
+                                                        .qrcodes
+                                                        .removeWhere((element) =>
+                                                            idsToDelete
+                                                                .contains(
+                                                                    element[
+                                                                        'id']));
+                                                    DataCubit.get(context)
+                                                        .qrcodes
+                                                        .sort((a, b) => (a['id']
+                                                                as int)
+                                                            .compareTo(b['id']
+                                                                as int));
+                                                  });
+                                                } catch (e) {
+                                                  print(
+                                                      'Error deleting selected QR codes: $e');
+                                                } finally {
+                                                  overlayEntry.remove();
+                                                }
+                                              },
+                                        child: const Text('Delete Selected'),
+                                      ),
+                                    )
                                   ],
                                 ),
                               ),
