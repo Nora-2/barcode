@@ -19,50 +19,77 @@ class Entercompanies extends StatefulWidget {
 
 class _EntercompaniesState extends State<Entercompanies> {
   TextEditingController companyController = TextEditingController();
+  TextEditingController editController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _editFormKey = GlobalKey<FormState>();
   bool isDataVisible = false;
+  String? editingCompanyId;
 
   CollectionReference companies = FirebaseFirestore.instance.collection('companies');
 
-Future<void> addCompany() async {
-  String companyName = companyController.text.trim(); // Trim to remove any leading/trailing whitespace
+  Future<void> addCompany() async {
+    String companyName = companyController.text.trim(); // Trim to remove any leading/trailing whitespace
 
-  // Check if the company already exists
-  QuerySnapshot querySnapshot = await companies.where('Company Name', isEqualTo: companyName).get();
+    // Check if the company already exists
+    QuerySnapshot querySnapshot = await companies.where('Company Name', isEqualTo: companyName).get();
 
-  if (querySnapshot.docs.isEmpty) {
-    // Company does not exist, proceed to add it
+    if (querySnapshot.docs.isEmpty) {
+      // Company does not exist, proceed to add it
+      try {
+        await companies.add({'Company Name': companyName});
+        customAwesomeDialog(
+          context: context,
+          dialogType: DialogType.success,
+          title: 'Success',
+          description: 'Company added successfully! \n تم إضافة الشركة بنجاح',
+          buttonColor: Colors.green,
+        ).show();
+        print("Company Added");
+      } catch (error) {
+        customAwesomeDialog(
+          context: context,
+          dialogType: DialogType.error,
+          title: 'Error',
+          description: 'Failed to add company: $error \n فشل في إضافة الشركة',
+          buttonColor: Colors.red,
+        ).show();
+      }
+    } else {
+      // Company already exists
+      customAwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        title: 'Error',
+        description: 'Company already exists! \n الشركة موجودة بالفعل',
+        buttonColor: Colors.red,
+      ).show();
+    }
+  }
+
+  Future<void> updateCompany(String docId, String newName) async {
     try {
-      await companies.add({'Company Name': companyName});
+      await companies.doc(docId).update({'Company Name': newName});
       customAwesomeDialog(
         context: context,
         dialogType: DialogType.success,
         title: 'Success',
-        description: 'Company added successfully! \n تم إضافة الشركة بنجاح',
+        description: 'Company updated successfully! \n تم تحديث الشركة بنجاح',
         buttonColor: Colors.green,
       ).show();
-      print("Company Added");
+      setState(() {
+        editingCompanyId = null;
+        editController.clear();
+      });
     } catch (error) {
       customAwesomeDialog(
         context: context,
         dialogType: DialogType.error,
         title: 'Error',
-        description: 'Failed to add company: $error \n فشل في إضافة الشركة',
+        description: 'Failed to update company: $error \n فشل في تحديث الشركة',
         buttonColor: Colors.red,
       ).show();
     }
-  } else {
-    // Company already exists
-    customAwesomeDialog(
-      context: context,
-      dialogType: DialogType.error,
-      title: 'Error',
-      description: 'Company already exists! \n الشركة موجودة بالفعل',
-      buttonColor: Colors.red,
-    ).show();
   }
-}
-
 
   Future<void> deleteCompany(String docId) async {
     try {
@@ -161,9 +188,80 @@ Future<void> addCompany() async {
                       ),
                     ),
                   ),
-                    SizedBox(
+                  SizedBox(
                     height: height * 0.02,
                   ),
+                  if (editingCompanyId != null)
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: width * 0.14),
+                      child: Form(
+                        key: _editFormKey,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              decoration: InputDecoration(
+                                hintText: 'Edit company name',
+                                hintStyle: const TextStyle(color: Colors.grey, fontSize: 16),
+                                enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: const BorderSide(color: Colors.blueGrey)),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ),
+                              controller: editController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a new company name';
+                                }
+                                return null;
+                              },
+                            ),
+                            SizedBox(
+                              height: height * 0.02,
+                            ),
+                            SizedBox(
+                              width: width * 0.4,
+                              height: height * 0.07,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: primarycolor,
+                                  shadowColor: Colors.grey,
+                                  elevation: 5,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  if (_editFormKey.currentState!.validate()) {
+                                    updateCompany(editingCompanyId!, editController.text.trim());
+                                  }
+                                },
+                                child: const Text(
+                                  'Update',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 25,
+                                      fontFamily: 'MulishRomanBold',
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                     SizedBox(
+                              height: height * 0.02,
+                            ),
                   SizedBox(
                     width: width * 0.4,
                     height: height * 0.07,
@@ -241,14 +339,28 @@ Future<void> addCompany() async {
                             itemBuilder: (context, index) {
                               var companyData = companyDocs[index].data() as Map<String, dynamic>;
                               return Card(
-                                margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                                margin: const EdgeInsets.symmetric( horizontal: 15),
                                 child: ListTile(
                                   title: Text(companyData['Company Name']),
-                                  trailing: IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () {
-                                      deleteCompany(companyDocs[index].id);
-                                    },
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit, color: Colors.blue),
+                                        onPressed: () {
+                                          setState(() {
+                                            editingCompanyId = companyDocs[index].id;
+                                            editController.text = companyData['Company Name'];
+                                          });
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete, color: Colors.red),
+                                        onPressed: () {
+                                          deleteCompany(companyDocs[index].id);
+                                        },
+                                      ),
+                                    ],
                                   ),
                                 ),
                               );
@@ -259,6 +371,7 @@ Future<void> addCompany() async {
                     )
                   else
                     Container(color:  Colors.white, height: height * 0.7,),
+                  
                 ],
               ),
             ),
