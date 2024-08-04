@@ -33,24 +33,32 @@ class _CoreState extends State<Core> {
     _fetchCompanyNames();
   }
 
-  Future<void> _fetchCompanyNames() async {
-    try {
-      CollectionReference companies =
-          FirebaseFirestore.instance.collection('companies');
-      QuerySnapshot querySnapshot = await companies.get();
+ 
 
-      // Extract company names
-      List<String> companyNames = querySnapshot.docs
-          .map((doc) => doc['Company Name'] as String)
-          .toList();
+Future<void> _fetchCompanyNames() async {
+  try {
+    // Enable offline persistence if not already enabled
+    FirebaseFirestore.instance.settings =const Settings(persistenceEnabled: true);
 
-      setState(() {
-        _dropdownItems = companyNames;
-      });
-    } catch (e) {
-      print("Error fetching company names: $e");
+    CollectionReference companies = FirebaseFirestore.instance.collection('companies');
+    QuerySnapshot querySnapshot = await companies.get(const GetOptions(source: Source.cache));
+
+    if (querySnapshot.docs.isEmpty) {
+      querySnapshot = await companies.get();
     }
+
+    // Extract company names
+    List<String> companyNames = querySnapshot.docs
+        .map((doc) => doc['Company Name'] as String)
+        .toList();
+
+    setState(() {
+      _dropdownItems = companyNames;
+    });
+  } catch (e) {
+    print("Error fetching company names: $e");
   }
+}
 
   @override
   Widget build(BuildContext context) {

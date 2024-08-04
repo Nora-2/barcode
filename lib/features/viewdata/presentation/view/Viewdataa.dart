@@ -1,16 +1,13 @@
 // ignore_for_file: use_build_context_synchronously, unused_field, library_private_types_in_public_api, file_names, avoid_print, must_be_immutable, unused_local_variable, no_leading_underscores_for_local_identifiers
 
-import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_excel/excel.dart';
 import 'package:parcode/core/utilis/constant.dart';
-import 'package:parcode/core/widgets/AwesomeDiaglog.dart';
 import 'package:parcode/features/home/home.dart';
 import 'package:parcode/features/viewdata/cubit/cubit/data_cubit.dart';
-import 'package:universal_html/html.dart' as html;
+import 'package:parcode/features/viewdata/presentation/view/confirmdelelt.dart';
+
 
 class ViewDataScreen extends StatefulWidget {
   const ViewDataScreen({super.key});
@@ -34,23 +31,6 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
   void dispose() {
     DataCubit.get(context).close(); // Ensure resources are closed
     super.dispose();
-  }
-
-  Future<List<String>> fetchCompanyNames() async {
-    CollectionReference qrcodes =
-        FirebaseFirestore.instance.collection('qrcodes');
-
-    QuerySnapshot querySnapshot = await qrcodes.get();
-
-    // Use a Set to ensure uniqueness
-    Set<String> companyNamesSet = querySnapshot.docs
-        .map((doc) => (doc.data() as Map<String, dynamic>)['company'] as String)
-        .toSet(); // Convert to Set to remove duplicates
-
-    // Convert Set to List
-    List<String> companyNames = companyNamesSet.toList();
-
-    return companyNames;
   }
 
   @override
@@ -97,54 +77,7 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                     bool? confirmDelete = await showDialog(
                       context: context,
                       builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text(
-                            'Confirm Delete',
-                            style: TextStyle(
-                                fontSize: 27,
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'MulishRomanBold'),
-                          ),
-                          content: const Text(
-                            'Are you sure you want to delete all data?',
-                            style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w200,
-                                fontFamily: 'MulishRomanBold'),
-                          ),
-                          backgroundColor: Colors.white,
-                          actions: <Widget>[
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context)
-                                    .pop(false); // Cancel the delete action
-                              },
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff2452B1),
-                                ),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context)
-                                    .pop(true); // Confirm the delete action
-                              },
-                              child: const Text(
-                                'Delete',
-                                style: TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff2452B1),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
+                        return const confirmdelete();
                       },
                     );
 
@@ -162,8 +95,8 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                   icon: const Icon(Icons.download, color: Colors.white),
                   onPressed: () async {
                     final qrcodes = DataCubit.get(context).qrcodes;
-                    await generateExcel(
-                      qrcodes,
+                    await DataCubit.get(context).generateExcel(
+                      qrcodes,context
                     );
                   },
                 ),
@@ -343,7 +276,7 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                         padding: const EdgeInsets.all(8.0),
                         child: Center(
                           child: FutureBuilder<List<String>>(
-                            future: fetchCompanyNames(),
+                            future: DataCubit.get(context).fetchCompanyNames(),
                             builder: (BuildContext context,
                                 AsyncSnapshot<List<String>> snapshot) {
                               if (snapshot.connectionState ==
@@ -500,8 +433,16 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                                                       Icons.delete,
                                                       color: Colors.red,
                                                     ),
-                                                    onPressed: () async {
-                                                      int docId = code['id'];
+                                                    onPressed:  () async {
+                    bool? confirmDelete = await showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return const confirmdelete();
+                      },
+                    );
+
+                    if (confirmDelete == true) {
+                     int docId = code['id'];
                                                       await DataCubit.get(
                                                               context)
                                                           .deleteData(
@@ -521,7 +462,9 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                                                                   'id'] as int)
                                                               .compareTo(b['id']
                                                                   as int));
-                                                    },
+                    }
+                  },
+                                                   
                                                   ),
                                                 ),
                                               ),
@@ -553,7 +496,15 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                                         onPressed: selectedQRCodes.isEmpty
                                             ? null
                                             : () async {
-                                                OverlayEntry? overlayEntry;
+                    bool? confirmDelete = await showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return const confirmdelete();
+                      },
+                    );
+
+                    if (confirmDelete == true) {
+                      OverlayEntry? overlayEntry;
                                                 OverlayState? overlayState =
                                                     Overlay.of(context);
 
@@ -604,7 +555,11 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
                                                 } finally {
                                                   overlayEntry.remove();
                                                 }
-                                              },
+                                              
+                    }
+                  },
+                                            
+                                                
                                         child: const Text('Delete Selected'),
                                       ),
                                     )
@@ -621,52 +576,5 @@ class _ViewDataScreenState extends State<ViewDataScreen> {
         },
       ),
     );
-  }
-
-  Future<void> generateExcel(List<Map<String, dynamic>> qrcodes) async {
-    var excel = Excel.createExcel();
-
-    Sheet sheetObject = excel['QR Codes'];
-    sheetObject.appendRow([
-      'ID',
-      'Barcode \n الباركود',
-      'DateTime \n التاريخ',
-      'Company \n الشركة',
-    ]);
-
-    for (var code in qrcodes) {
-      sheetObject.appendRow([
-        code['id'],
-        code['qrCode'],
-        code['datetime'],
-        code['company'],
-      ]);
-    }
-    var bytes = excel.encode();
-
-    if (bytes == null) {
-      throw Exception('Failed to encode Excel file');
-    }
-
-    // Create a Blob from the bytes
-    final blob = html.Blob([bytes],
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-    // Create a download link and trigger it
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    final anchor = html.AnchorElement(href: url)
-      ..setAttribute('download', 'QRCodesquary.xlsx')
-      ..click();
-    html.Url.revokeObjectUrl(url);
-
-    // Show success dialog
-    customAwesomeDialog(
-      context: context,
-      dialogType: DialogType.success,
-      title: 'Success',
-      description:
-          'Excel file downloaded successfully! \n تم تنزيل ملف اكسل بنجاح',
-      buttonColor: const Color(0xff00CA71),
-    ).show();
   }
 }

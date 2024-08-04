@@ -1,12 +1,13 @@
-// ignore_for_file: use_build_context_synchronously, unnecessary_cast, avoid_print
+// ignore_for_file: use_build_context_synchronously, unnecessary_cast, avoid_print, unused_local_variable
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_excel/excel.dart';
 import 'dart:async';
 import 'package:parcode/core/widgets/AwesomeDiaglog.dart';
-
+import 'package:universal_html/html.dart' as html;
 part 'data_state.dart';
 
 class DataCubit extends Cubit<DataState> {
@@ -61,7 +62,7 @@ Future<void> deleteselectedData(List<int> docIds, BuildContext context) async {
       context: context,
       dialogType: DialogType.success,
       title: 'Success',
-      description: 'The selected Barcodes deleted successfully!',
+      description:'All Barcodes deleted successfully! \n تم حذف الباركود كل بنجاح',
       buttonColor: const Color(0xff00CA71),
     ).show();
   } catch (e) {
@@ -147,7 +148,68 @@ Future<void> deleteselectedData(List<int> docIds, BuildContext context) async {
       print('Error: $e');
     }
   }
+Future<List<String>> fetchCompanyNames() async {
+    CollectionReference qrcodes =
+        FirebaseFirestore.instance.collection('qrcodes');
 
+    QuerySnapshot querySnapshot = await qrcodes.get();
+
+    // Use a Set to ensure uniqueness
+    Set<String> companyNamesSet = querySnapshot.docs
+        .map((doc) => (doc.data() as Map<String, dynamic>)['company'] as String)
+        .toSet(); // Convert to Set to remove duplicates
+
+    // Convert Set to List
+    List<String> companyNames = companyNamesSet.toList();
+
+    return companyNames;
+  }
+ Future<void> generateExcel(List<Map<String, dynamic>> qrcodes,BuildContext context) async {
+    var excel = Excel.createExcel();
+
+    Sheet sheetObject = excel['QR Codes'];
+    sheetObject.appendRow([
+      'ID',
+      'Barcode \n الباركود',
+      'DateTime \n التاريخ',
+      'Company \n الشركة',
+    ]);
+
+    for (var code in qrcodes) {
+      sheetObject.appendRow([
+        code['id'],
+        code['qrCode'],
+        code['datetime'],
+        code['company'],
+      ]);
+    }
+    var bytes = excel.encode();
+
+    if (bytes == null) {
+      throw Exception('Failed to encode Excel file');
+    }
+
+    // Create a Blob from the bytes
+    final blob = html.Blob([bytes],
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+    // Create a download link and trigger it
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute('download', 'QRCodesquary.xlsx')
+      ..click();
+    html.Url.revokeObjectUrl(url);
+
+    // Show success dialog
+    customAwesomeDialog(
+      context: context,
+      dialogType: DialogType.success,
+      title: 'Success',
+      description:
+          'Excel file downloaded successfully! \n تم تنزيل ملف اكسل بنجاح',
+      buttonColor: const Color(0xff00CA71),
+    ).show();
+  }
   Future<void> rearrangeAndSetCurrentId() async {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
